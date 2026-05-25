@@ -5,56 +5,328 @@
 
     <meta charset="UTF-8">
 
-    <title>AI SRE Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI SRE Monitor</title>
+
+    {% load static %}
+
+    <!-- Bootstrap -->
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
-    {% load static %}
+    <!-- Google Font -->
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Custom CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
 
 </head>
 
 <body>
 
-<div class="container mt-5">
+<!-- Navbar -->
 
-    <h1 class="mb-4 text-center">
-        AI Incident Root Cause Analyzer
-    </h1>
+<nav class="navbar navbar-dark navbar-custom shadow-lg">
 
-    <div class="card shadow-lg mb-5">
+    <div class="container-fluid px-4">
 
-    <div class="card-body">
+        <span class="navbar-brand fw-bold">
 
-        <h3 class="mb-3">
-            Analyze New Incident
-        </h3>
+            AI SRE Monitor
 
-        <form method="POST">
+        </span>
 
-            {% csrf_token %}
+        <div>
 
-            <div class="mb-3">
-                {{ form.title }}
-            </div>
+            <span class="live-text me-4">
 
-            <div class="mb-3">
-                {{ form.logs }}
-            </div>
+                ● Live Monitoring
 
-            <button class="btn btn-dark">
-                Analyze Incident
-            </button>
+            </span>
 
-        </form>
+            <a
+                href="/logout/"
+                class="btn btn-danger btn-sm"
+            >
+                Logout
+            </a>
+
+        </div>
 
     </div>
 
-</div>
+</nav>
+
+<!-- Main Container -->
+
+<div class="container py-5">
+
+    <!-- Welcome -->
+
+    <div class="mb-4">
+
+        <h5 class="text-info">
+
+            Welcome,
+            {{ request.user.username }}
+
+        </h5>
+
+    </div>
+
+    <!-- Critical Alert -->
+
+    {% if critical_incidents > 0 %}
+
+    <div class="alert live-alert shadow-lg mb-5">
+
+        🚨 Critical incidents detected in infrastructure!
+
+    </div>
+
+    {% endif %}
+
+    <!-- Heading -->
+
+    <div class="text-center mb-5">
+
+        <h1 class="main-heading">
+
+            AI Incident Root Cause Analyzer
+
+        </h1>
+
+        <p class="subtitle">
+
+            Enterprise AI Monitoring Dashboard
+
+        </p>
+
+    </div>
+
+    <!-- Incident Form -->
+
+    <div class="card main-card shadow-lg mb-5">
+
+        <div class="card-body p-4">
+
+            <h3 class="mb-4">
+
+                Analyze New Incident
+
+            </h3>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <!-- Title -->
+
+                <div class="mb-3">
+
+                    {{ form.title }}
+
+                </div>
+
+                <!-- Logs -->
+
+                <div class="mb-3">
+
+                    {{ form.logs }}
+
+                </div>
+
+                <!-- Button -->
+
+                <button class="btn btn-primary btn-lg">
+
+                    Analyze Incident
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Stats -->
+
+    <div class="row mb-5">
+
+        <!-- Total -->
+
+        <div class="col-md-3 mb-4">
+
+            <div class="card stats-card stats-blue shadow-lg">
+
+                <div class="card-body text-center">
+
+                    <h5>Total Incidents</h5>
+
+                    <h2>
+
+                        {{ total_incidents }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Critical -->
+
+        <div class="col-md-3 mb-4">
+
+            <div class="card stats-card stats-red shadow-lg">
+
+                <div class="card-body text-center">
+
+                    <h5>Critical</h5>
+
+                    <h2>
+
+                        {{ critical_incidents }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- High -->
+
+        <div class="col-md-3 mb-4">
+
+            <div class="card stats-card stats-orange shadow-lg">
+
+                <div class="card-body text-center">
+
+                    <h5>High Severity</h5>
+
+                    <h2>
+
+                        {{ high_incidents }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Avg -->
+
+        <div class="col-md-3 mb-4">
+
+            <div class="card stats-card stats-cyan shadow-lg">
+
+                <div class="card-body text-center">
+
+                    <h5>Avg Anomaly</h5>
+
+                    <h2>
+
+                        {{ avg_score }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Analytics -->
+
+    <div class="card main-card shadow-lg mb-5">
+
+        <div class="card-body p-4">
+
+            <h3 class="mb-4">
+
+                Incident Analytics
+
+            </h3>
+
+            <canvas id="incidentChart"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- Live Feed -->
+
+    <div class="card main-card shadow-lg mb-5">
+
+        <div class="card-body p-4">
+
+            <h3 class="mb-4">
+
+                Live Incident Feed
+
+            </h3>
+
+            {% for incident in incidents|slice:":5" %}
+
+            <div class="feed-item">
+
+                <strong>
+
+                    {{ incident.title }}
+
+                </strong>
+
+                -
+
+                <span class="text-danger">
+
+                    {{ incident.severity }}
+
+                </span>
+
+                <br>
+
+                <small class="text-muted">
+
+                    {{ incident.created_at }}
+
+                </small>
+
+            </div>
+
+            <hr class="feed-divider">
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- Incident Cards -->
 
     <div class="row">
 
@@ -62,57 +334,118 @@
 
         <div class="col-md-6 mb-4">
 
-            <div class="card shadow-lg">
+            <div class="card incident-card shadow-lg">
 
-                <div class="card-body">
+                <div class="card-body p-4">
 
-                    <h4>
-                        {{ incident.title }}
-                    </h4>
-                    {% if incident.severity == 'Critical' %}
-    <span class="badge bg-dark">
-        {{ incident.severity }}
-    </span>
+                    <!-- Header -->
 
-{% elif incident.severity == 'High' %}
-    <span class="badge bg-danger">
-        {{ incident.severity }}
-    </span>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
 
-{% elif incident.severity == 'Medium' %}
-    <span class="badge bg-warning text-dark">
-        {{ incident.severity }}
-    </span>
+                        <h4>
 
-{% else %}
-    <span class="badge bg-success">
-        {{ incident.severity }}
-    </span>
-{% endif %}
-                    
+                            {{ incident.title }}
 
-                    <hr>
+                        </h4>
 
-                    <h6>Logs</h6>
+                        {% if incident.severity == 'Critical' %}
 
-                    <pre>
-                        {{ incident.logs }}
-                    </pre>
+                        <span class="badge bg-dark p-2">
 
-                    <h6>Root Cause</h6>
+                            {{ incident.severity }}
+
+                        </span>
+
+                        {% elif incident.severity == 'High' %}
+
+                        <span class="badge bg-danger p-2">
+
+                            {{ incident.severity }}
+
+                        </span>
+
+                        {% elif incident.severity == 'Medium' %}
+
+                        <span class="badge bg-warning text-dark p-2">
+
+                            {{ incident.severity }}
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-success p-2">
+
+                            {{ incident.severity }}
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Score -->
+
+                    <div class="mb-3">
+
+                        <strong>
+
+                            Anomaly Score:
+
+                        </strong>
+
+                        <span class="text-danger">
+
+                            {{ incident.anomaly_score }}
+
+                        </span>
+
+                    </div>
+
+                    <!-- Logs -->
+
+                    <h6 class="section-title">
+
+                        Logs
+
+                    </h6>
+
+                    <pre>{{ incident.logs }}</pre>
+
+                    <!-- Root Cause -->
+
+                    <h6 class="section-title mt-4">
+
+                        Root Cause
+
+                    </h6>
 
                     <p>
+
                         {{ incident.root_cause }}
+
                     </p>
 
-                    <h6>Suggested Fix</h6>
+                    <!-- Suggested Fix -->
+
+                    <h6 class="section-title mt-4">
+
+                        Suggested Fix
+
+                    </h6>
 
                     <p>
+
                         {{ incident.suggestion }}
+
                     </p>
+
+                    <!-- Time -->
 
                     <small class="text-muted">
+
                         {{ incident.created_at }}
+
                     </small>
 
                 </div>
@@ -121,11 +454,121 @@
 
         </div>
 
+        {% empty %}
+
+        <div class="text-center">
+
+            <h4>
+
+                No incidents found
+
+            </h4>
+
+        </div>
+
         {% endfor %}
 
     </div>
 
 </div>
+
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx = document.getElementById('incidentChart');
+
+new Chart(ctx, {
+
+    type: 'bar',
+
+    data: {
+
+        labels: [
+            'Critical',
+            'High',
+            'Total'
+        ],
+
+        datasets: [{
+
+            label: 'Incident Statistics',
+
+            data: [
+                {{ critical_incidents }},
+                {{ high_incidents }},
+                {{ total_incidents }}
+            ],
+
+            borderWidth: 2
+        }]
+    },
+
+    options: {
+
+        responsive: true,
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true
+
+            }
+
+        }
+
+    }
+
+});
+
+/* SMART AUTO REFRESH */
+
+let typing = false;
+
+/* Detect typing */
+
+const inputs = document.querySelectorAll(
+    "input, textarea"
+);
+
+inputs.forEach(input => {
+
+    input.addEventListener(
+        "focus",
+        () => {
+
+            typing = true;
+
+        }
+    );
+
+    input.addEventListener(
+        "blur",
+        () => {
+
+            typing = false;
+
+        }
+    );
+
+});
+
+/* Refresh only when not typing */
+
+setInterval(() => {
+
+    if (!typing) {
+
+        location.reload();
+
+    }
+
+}, 30000);
+
+</script>
 
 </body>
 
